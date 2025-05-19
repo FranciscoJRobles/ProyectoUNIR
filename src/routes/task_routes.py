@@ -11,17 +11,17 @@ def validate_task_data(data, require_all_fields=True):
     for field in required_fields:
         if field not in data:
             if require_all_fields:
-                errors.append(f"Missing field: {field}")
+                errors.append(f"Falta el campo: {field}")
         else:
             if field == "priority" and data[field] not in PriorityEnum._value2member_map_:
-                errors.append(f"Invalid priority: {data[field]}")
+                errors.append(f"Prioridad no válida: {data[field]}")
             if field == "status" and data[field] not in StatusEnum._value2member_map_:
-                errors.append(f"Invalid status: {data[field]}")
+                errors.append(f"Estado no válido: {data[field]}")
             if field == "effort_hours":
                 try:
                     float(data[field])
                 except (ValueError, TypeError):
-                    errors.append("effort_hours must be a number")
+                    errors.append("El campo 'effort_hours' debe ser un número")
 
     return errors
 
@@ -30,7 +30,7 @@ def validate_task_data(data, require_all_fields=True):
 def create_task():
     data = request.json
     if not data:
-        return jsonify({"error": "No input data provided"}), 400
+        return jsonify({"error": "No se proporcionaron datos de entrada"}), 400
 
     errors = validate_task_data(data)
     if errors:
@@ -52,7 +52,7 @@ def create_task():
         TaskManager.save_tasks(tasks)
         return jsonify(task.to_dict()), 201
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error al crear la tarea: {str(e)}"}), 500
 
 # Leer todas las tareas
 @tasks_bp.route('/tasks', methods=['GET'])
@@ -61,7 +61,7 @@ def get_tasks():
         tasks = TaskManager.load_tasks()
         return jsonify([task.to_dict() for task in tasks])
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error al obtener las tareas: {str(e)}"}), 500
 
 # Leer una tarea específica
 @tasks_bp.route('/tasks/<int:task_id>', methods=['GET'])
@@ -70,17 +70,17 @@ def get_task(task_id):
         tasks = TaskManager.load_tasks()
         task = next((t for t in tasks if t.id == task_id), None)
         if not task:
-            return jsonify({'error': 'Task not found'}), 404
+            return jsonify({'error': 'Tarea no encontrada'}), 404
         return jsonify(task.to_dict())
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error al obtener la tarea: {str(e)}"}), 500
 
 # Actualizar una tarea
 @tasks_bp.route('/tasks/<int:task_id>', methods=['PUT'])
 def update_task(task_id):
     data = request.json
     if not data:
-        return jsonify({"error": "No input data provided"}), 400
+        return jsonify({"error": "No se proporcionaron datos de entrada"}), 400
 
     errors = validate_task_data(data, require_all_fields=False)
     if errors:
@@ -104,9 +104,9 @@ def update_task(task_id):
                 )
                 TaskManager.save_tasks(tasks)
                 return jsonify(tasks[i].to_dict())
-        return jsonify({'error': 'Task not found'}), 404
+        return jsonify({'error': 'Tarea no encontrada'}), 404
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error al actualizar la tarea: {str(e)}"}), 500
 
 # Eliminar una tarea
 @tasks_bp.route('/tasks/<int:task_id>', methods=['DELETE'])
@@ -114,9 +114,9 @@ def delete_task(task_id):
     try:
         tasks = TaskManager.load_tasks()
         if not any(t.id == task_id for t in tasks):
-            return jsonify({'error': 'Task not found'}), 404
+            return jsonify({'error': 'Tarea no encontrada'}), 404
         tasks = [t for t in tasks if t.id != task_id]
         TaskManager.save_tasks(tasks)
-        return jsonify({'result': 'Task deleted'})
+        return jsonify({'result': 'Tarea eliminada'})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Error al eliminar la tarea: {str(e)}"}), 500
