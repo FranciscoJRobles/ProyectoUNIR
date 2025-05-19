@@ -1,3 +1,5 @@
+# Utilidades generales para el proyecto.
+
 # Funciones auxiliares para la gestión de tareas (lectura/escritura JSON)
 import json
 import os

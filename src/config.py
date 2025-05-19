@@ -1,1 +1,1 @@
-DATA_FILE = 'tasks.json'
+DATA_FILE = "tasks.json"

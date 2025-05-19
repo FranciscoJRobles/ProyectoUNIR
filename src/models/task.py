@@ -29,3 +29,15 @@ class Task:
         d['priority'] = self.priority.value
         d['status'] = self.status.value
         return d
+
+    @staticmethod
+    def from_dict(data):
+        return Task(
+            id=data['id'],
+            title=data['title'],
+            description=data['description'],
+            priority=PriorityEnum(data['priority']),
+            effort_hours=data['effort_hours'],
+            status=StatusEnum(data['status']),
+            assigned_to=data['assigned_to']
+        )
