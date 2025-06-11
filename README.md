@@ -1,17 +1,19 @@
-# Proyecto Flask modularizado para gestión de tareas
-El proyecto, en su fase de entregable 1, tendrá que ser capaz de gestionar tareas (Task) a través de un Task_Manager que carge y guarde estas tareas en desde/hacia un JSON y el control de creación,modificado,borrado y consulta se hará a través del framework flask con endpoints.
+# Proyecto Flask modularizado para gestión de tareas con IA
+
+Este proyecto permite gestionar tareas (Task) a través de un sistema modularizado en Flask, con almacenamiento en JSON y endpoints REST. Además, integra endpoints que utilizan modelos de lenguaje (LLM) para automatizar descripciones, categorización, estimación de esfuerzo y auditoría de riesgos en las tareas.
 
 ## Estructura
-- env/: entorno virtual, si es necesario (opcional)
-- htmlcov/ carpeta de reportes html de coverage de tests de código (opcional)
+- env/: entorno virtual (no se sube al repositorio)
+- htmlcov/: reportes de cobertura de tests (opcional)
 - src/: Código fuente de la aplicación
-    -managers/: gestiona la carga y descarga de datos
-    -models/: define los modelos usados
-    -routes/: define las rutas (endpoints) para gestionar los datos
+    - managers/: gestión de carga y guardado de datos
+    - models/: definición de modelos de datos
+    - routes/: definición de endpoints REST
+- ai/: Lógica de interacción con IA (OpenAI/Azure)
 - tests/: Pruebas unitarias
-config.py: definimos variables del sistema/proyecto
-main.py: archivo principal de ejecución
-utils.py: funciones auxiliares, si hicieran falta.
+- config.py: variables de configuración
+- main.py: archivo principal de ejecución
+- utils.py: funciones auxiliares (si fueran necesarias)
 
 ## Instalación
 
@@ -22,8 +24,23 @@ pip install -r requirements.txt
 ## Ejecución
 
 ```bash
-python -m src.main
+python main.py
 ```
+
+## Endpoints principales
+
+### CRUD de tareas
+- **POST /tasks**: Crear una tarea
+- **GET /tasks**: Obtener todas las tareas
+- **GET /tasks/<id>**: Obtener una tarea por ID
+- **PUT /tasks/<id>**: Actualizar una tarea
+- **DELETE /tasks/<id>**: Eliminar una tarea
+
+### Endpoints con IA
+- **POST /ai/tasks/describe**: Genera la descripción de una tarea a partir de su título y otros campos opcionales.
+- **POST /ai/tasks/categorize**: Clasifica una tarea en una categoría (Backend, Frontend, Testing, Documentación, Otro) usando IA.
+- **POST /ai/tasks/estimate**: Estima el esfuerzo en horas de una tarea a partir de su título, descripción, prioridad y categoría.
+- **POST /ai/tasks/audit**: Genera un análisis de riesgos y un plan de mitigación para una tarea usando IA.
 
 ## Ejemplos de uso de la API
 
@@ -31,7 +48,7 @@ python -m src.main
 ```bash
 curl -X POST http://127.0.0.1:5000/tasks \
 -H "Content-Type: application/json" \
--d "{\"title\": \"Tarea de ejemplo\", \"description\": \"Descripción\", \"priority\": \"alta\", \"effort_hours\": 2, \"status\": \"pendiente\", \"assigned_to\": \"Juan\"}"
+-d '{"title": "Tarea de ejemplo", "description": "Descripción", "priority": "alta", "effort_hours": 2, "status": "pendiente", "assigned_to": "Juan"}'
 ```
 
 ### Obtener todas las tareas (GET)
@@ -48,12 +65,40 @@ curl http://127.0.0.1:5000/tasks/1
 ```bash
 curl -X PUT http://127.0.0.1:5000/tasks/1 \
 -H "Content-Type: application/json" \
--d "{\"title\": \"Tarea actualizada\", \"description\": \"Nueva descripción\", \"priority\": \"media\", \"effort_hours\": 3, \"status\": \"en progreso\", \"assigned_to\": \"Ana\"}"
+-d '{"title": "Tarea actualizada", "description": "Nueva descripción", "priority": "media", "effort_hours": 3, "status": "en progreso", "assigned_to": "Ana"}'
 ```
 
 ### Eliminar una tarea (DELETE)
 ```bash
 curl -X DELETE http://127.0.0.1:5000/tasks/1
+```
+
+### Endpoint IA: Describir tarea (POST)
+```bash
+curl -X POST http://127.0.0.1:5000/ai/tasks/describe \
+-H "Content-Type: application/json" \
+-d '{"title": "Implementar autenticación JWT", "description": "", "priority": "alta", "category": "Backend"}'
+```
+
+### Endpoint IA: Categorizar tarea (POST)
+```bash
+curl -X POST http://127.0.0.1:5000/ai/tasks/categorize \
+-H "Content-Type: application/json" \
+-d '{"title": "Crear pruebas unitarias", "description": "Escribir tests para el módulo de usuarios"}'
+```
+
+### Endpoint IA: Estimar esfuerzo (POST)
+```bash
+curl -X POST http://127.0.0.1:5000/ai/tasks/estimate \
+-H "Content-Type: application/json" \
+-d '{"title": "Desarrollar API REST", "description": "Crear endpoints para gestión de usuarios", "priority": "media", "category": "Backend"}'
+```
+
+### Endpoint IA: Auditar tarea (POST)
+```bash
+curl -X POST http://127.0.0.1:5000/ai/tasks/audit \
+-H "Content-Type: application/json" \
+-d '{"title": "Actualizar librerías del proyecto", "description": "Actualizar dependencias a sus últimas versiones", "priority": "media", "category": "Backend"}'
 ```
 
 ## Ejecución de tests
