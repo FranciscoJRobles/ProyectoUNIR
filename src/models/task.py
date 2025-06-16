@@ -1,57 +1,44 @@
-from enum import Enum
-from dataclasses import dataclass, asdict
+from sqlalchemy import Enum as SqlEnum, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from typing import Optional
+from src.db import db
+from src.models.enums import PriorityEnum, StatusEnum
 
-class PriorityEnum(str, Enum):
-    baja = 'baja'
-    media = 'media'
-    alta = 'alta'
-    bloqueante = 'bloqueante'
-
-class StatusEnum(str, Enum):
-    pendiente = 'pendiente'
-    en_progreso = 'en progreso'
-    en_revision = 'en revisión'
-    completada = 'completada'
-
-class CategoryEnum(str, Enum):
-    backend = 'Backend'
-    frontend = 'Frontend'
-    testing = 'Testing'
-    documentacion = 'Documentación'
-    otro = 'Otro'
-
-@dataclass
-class Task:
-    id: int
-    title: str
-    description: str
-    priority: PriorityEnum
-    effort_hours: float
-    status: StatusEnum
-    assigned_to: str
-    category: Optional[CategoryEnum] = None
-    risk_analysis: Optional[str] = None
-    risk_mitigation: Optional[str] = None
+class Task(db.Model):
+    __tablename__ = 'tasks'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    priority = db.Column(SqlEnum(PriorityEnum), nullable=False)
+    effort_hours = db.Column(db.Float, nullable=False)
+    status = db.Column(SqlEnum(StatusEnum), nullable=False)
+    assigned_to = db.Column(db.String(255), nullable=False)
+    user_story_id = db.Column(db.Integer, ForeignKey('user_stories.id'), nullable=True)
+    user_story = relationship('UserStory', backref='tasks')
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
     def to_dict(self):
-        d = asdict(self)
-        d['priority'] = self.priority.value
-        d['status'] = self.status.value
-        d['category'] = self.category.value if self.category else None
-        return d
+        return {
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
+            'priority': self.priority.value,
+            'effort_hours': self.effort_hours,
+            'status': self.status.value,
+            'assigned_to': self.assigned_to,
+            'user_story_id': self.user_story_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
 
     @staticmethod
     def from_dict(data):
         return Task(
-            id=data['id'],
             title=data['title'],
             description=data['description'],
             priority=PriorityEnum(data['priority']),
             effort_hours=data['effort_hours'],
             status=StatusEnum(data['status']),
             assigned_to=data['assigned_to'],
-            category=CategoryEnum(data['category']) if data.get('category') else None,
-            risk_analysis=data.get('risk_analysis'),
-            risk_mitigation=data.get('risk_mitigation')
+            user_story_id=data.get('user_story_id')
         )
