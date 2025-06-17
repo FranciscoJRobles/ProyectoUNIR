@@ -4,7 +4,6 @@ from sqlalchemy.sql import func
 from typing import Optional
 from src.db import db
 from src.models.enums import PriorityEnum, StatusEnum
-from src.models.user_story import UserStory
 
 class Task(db.Model):
     __tablename__ = 'tasks'
