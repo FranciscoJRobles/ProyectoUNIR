@@ -1,9 +1,10 @@
 from typing import Optional, List
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator, RootModel
+from pydantic import BaseModel, ConfigDict, Field, field_validator, RootModel
 from src.models.task import PriorityEnum, StatusEnum
 
 class TaskSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: Optional[int] = Field(default=None, serialization_only=True)
     title: str
     description: str
@@ -30,5 +31,7 @@ class TaskSchema(BaseModel):
             raise ValueError(f'status debe ser uno de {allowed}')
         return v
 
-class TaskSchemas(RootModel[List[TaskSchema]]):
-    pass
+class TaskSchemas(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    TaskSchemasList: List[TaskSchema]
+    

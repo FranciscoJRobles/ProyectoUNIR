@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historias de Usuario</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        #loadingSpinner {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h1>Historias de Usuario</h1>
+    <form id="promptForm" class="mb-4" method="post" action="/user-stories">
+        <label for="prompt" class="form-label">Generar historias de usuario desde prompt:</label>
+        <textarea id="prompt" name="prompt" class="form-control" rows="3"></textarea>
+        <button type="submit" class="btn btn-primary mt-2">Generar</button>
+    </form>
+    <div id="loadingSpinner">
+        <img src="https://i.gifer.com/ZZ5H.gif" alt="Cargando..." width="80" height="80">
+        <div class="text-center">Generando, por favor espera...</div>
+    </div>
+    <h2>Listado de historias de usuario</h2>
+    <ul class="list-group" id="userStoriesList">
+        {% for us in user_stories %}
+        <li class="list-group-item">
+            <div><strong>ID:</strong> {{ us.id }}</div>
+            <div><strong>Proyecto:</strong> {{ us.project }}</div>
+            <div><strong>Rol:</strong> {{ us.role }}</div>
+            <div><strong>Objetivo:</strong> {{ us.goal }}</div>
+            <div><strong>Razón:</strong> {{ us.reason }}</div>
+            <div><strong>Descripción:</strong> {{ us.description }}</div>
+            <div><strong>Prioridad:</strong> {{ us.priority }}</div>
+            <div><strong>Puntos de historia:</strong> {{ us.story_points }}</div>
+            <div><strong>Horas estimadas:</strong> {{ us.effort_hours }}</div>
+            <div><strong>Fecha de creación:</strong> {{ us.created_at }}</div>
+            <button class="btn btn-success btn-sm generate-tasks-btn" data-id="{{ us.id }}">Generar tareas</button>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+<script>
+// Mostrar spinner al enviar el formulario de prompt
+const promptForm = document.getElementById('promptForm');
+const loadingSpinner = document.getElementById('loadingSpinner');
+promptForm.addEventListener('submit', function() {
+    loadingSpinner.style.display = 'block';
+});
+// Botones para generar tareas
+const buttons = document.querySelectorAll('.generate-tasks-btn');
+buttons.forEach(btn => {
+    btn.addEventListener('click', function() {
+        loadingSpinner.style.display = 'block';
+        const userStoryId = this.getAttribute('data-id');
+        fetch(`/user-stories/${userStoryId}/generate-tasks`, {
+            method: 'POST'
+        }).then(response => {
+            loadingSpinner.style.display = 'none';
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                response.text().then(alert);
+            }
+        });
+    });
+});
+</script>
+</body>
+</html>

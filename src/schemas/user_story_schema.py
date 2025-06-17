@@ -1,9 +1,10 @@
 from typing import Optional, List
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator, RootModel
+from pydantic import BaseModel, ConfigDict, Field, field_validator, RootModel
 from src.models.user_story import PriorityEnum
 
 class UserStorySchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
     id: Optional[int] = Field(default=None, serialization_only=True)
     project: str
     role: str
@@ -30,5 +31,6 @@ class UserStorySchema(BaseModel):
             raise ValueError('story_points debe estar entre 1 y 8')
         return v
 
-class UserStorySchemas(RootModel[List[UserStorySchema]]):
-    pass
+class UserStorySchemas(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    UserStorySchemasList: List[UserStorySchema]

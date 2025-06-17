@@ -2,6 +2,8 @@ from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.sql import func
 from src.db import db
 from src.models.enums import PriorityEnum
+from src.models.task import Task
+
 
 class UserStory(db.Model):
     __tablename__ = 'user_stories'

@@ -24,7 +24,7 @@ v_presence_penalty = 0.0  # Penaliza la repetición de temas
 def set_parameters_to_technical():
     global v_max_tokens, v_temperature, v_top_p, v_frecuency_penalty, v_presence_penalty
     """Configura los parámetros de IA para respuestas técnicas."""
-    v_max_tokens = 2048
+    v_max_tokens = 4096
     v_temperature = 0.2
     v_top_p = 0.4
     v_frecuency_penalty = 0.0
@@ -42,7 +42,7 @@ def set_parameters_to_creative():
 def set_parameters_to_analitycs():  
     global v_max_tokens, v_temperature, v_top_p, v_frecuency_penalty, v_presence_penalty
     """Configura los parámetros de IA para respuestas analíticas."""
-    v_max_tokens = 8096
+    v_max_tokens = 4096
     v_temperature = 0.5
     v_top_p = 0.8
     v_frecuency_penalty = 0.5
@@ -73,7 +73,7 @@ def create_ai_client():
         print(f"Error al crear el cliente de OpenAI: {e}")
         return None
 
-def process_message_with_AI(message, context, response_type=ResponseType.DEFAULT):
+def process_message_with_AI(message, context, response_type=ResponseType.DEFAULT, schema=None):
     client = create_ai_client()
     if not client:
         return "Error al crear el cliente de OpenAI."
@@ -85,20 +85,34 @@ def process_message_with_AI(message, context, response_type=ResponseType.DEFAULT
         ResponseType.ANALYTICS: set_parameters_to_analitycs,
         ResponseType.DEFAULT: set_parameters_to_default
     }
-    # Llama al método correspondiente, o al de default si no existe
     parameter_setters.get(response_type, set_parameters_to_default)()
 
     try:
-        response = client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_MODEL"),
-            messages=context + [{"role": "user", "content": message}],
-            max_tokens=v_max_tokens,
-            temperature=v_temperature,
-            top_p=v_top_p,
-            frequency_penalty=v_frecuency_penalty,
-            presence_penalty=v_presence_penalty
-        )
-        return response.choices[0].message.content
+        if schema:
+            # Usar el método parse si se pasa un schema
+            response = client.beta.chat.completions.parse(
+                model=os.getenv("AZURE_OPENAI_MODEL"),
+                messages=context + [{"role": "user", "content": message}],
+                response_format=schema,
+                max_tokens=v_max_tokens,
+                temperature=v_temperature,
+                top_p=v_top_p,
+                frequency_penalty=v_frecuency_penalty,
+                presence_penalty=v_presence_penalty
+            )
+            return response.choices[0].message.content
+        else:
+            # Usar el método estándar si no hay schema
+            response = client.chat.completions.create(
+                model=os.getenv("AZURE_OPENAI_MODEL"),
+                messages=context + [{"role": "user", "content": message}],
+                max_tokens=v_max_tokens,
+                temperature=v_temperature,
+                top_p=v_top_p,
+                frequency_penalty=v_frecuency_penalty,
+                presence_penalty=v_presence_penalty
+            )
+            return response.choices[0].message.content
     except Exception as e:
         return f"Error al procesar el mensaje con IA: {e}"
 

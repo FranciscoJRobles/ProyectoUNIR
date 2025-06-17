@@ -1,25 +1,33 @@
-# Proyecto Flask modularizado para gestión de tareas con IA
+# Proyecto de Gestión Ágil de Tareas e Historias de Usuario con Flask, SQLAlchemy y Azure OpenAI
 
-Este proyecto permite gestionar tareas (Task) a través de un sistema modularizado en Flask, con almacenamiento en JSON y endpoints REST. Además, integra endpoints que utilizan modelos de lenguaje (LLM) para automatizar descripciones, categorización, estimación de esfuerzo y auditoría de riesgos en las tareas.
+Este proyecto es una aplicación web modularizada en Flask para la gestión de historias de usuario y tareas, integrando:
+- Backend en Flask con arquitectura limpia (managers, models, routes, schemas)
+- Persistencia en base de datos relacional (SQLAlchemy + MySQL)
+- Validación y serialización robusta con Pydantic
+- Vistas HTML con Jinja2 para gestión visual
+- Integración de IA (Azure OpenAI) para generación automática de historias de usuario y tareas
+- Feedback visual y control de errores en frontend
 
-## Estructura
-- env/: entorno virtual (no se sube al repositorio)
-- htmlcov/: reportes de cobertura de tests (opcional)
-- src/: Código fuente de la aplicación
-    - managers/: gestión de carga y guardado de datos
-    - models/: definición de modelos de datos
-    - routes/: definición de endpoints REST
-- ai/: Lógica de interacción con IA (OpenAI/Azure)
-- tests/: Pruebas unitarias
-- config.py: variables de configuración
-- main.py: archivo principal de ejecución
-- utils.py: funciones auxiliares (si fueran necesarias)
+## Estructura del proyecto
+- `env/`: entorno virtual (no incluido en el repo)
+- `src/`: código fuente principal
+    - `models/`: modelos ORM (SQLAlchemy) para Task y UserStory
+    - `schemas/`: Schemas Pydantic para validación y serialización
+    - `managers/`: lógica de acceso a base de datos
+    - `routes/`: endpoints REST y vistas HTML
+    - `templates/`: vistas Jinja2 (`user-stories.html`, `tasks.html`)
+    - `config.py`, `utils.py`, `__init__.py`
+- `ai/`: lógica de integración con Azure OpenAI
+- `tests/`: pruebas unitarias
+- `main.py`: punto de entrada de la app
 
 ## Instalación
 
 ```bash
 pip install -r requirements.txt
 ```
+
+Configura tu base de datos MySQL y las variables de entorno necesarias en `config.py`.
 
 ## Ejecución
 
@@ -29,6 +37,13 @@ python main.py
 
 ## Endpoints principales
 
+### CRUD de historias de usuario
+- **POST /user_stories**: Crear una historia de usuario
+- **GET /user_stories**: Obtener todas las historias de usuario
+- **GET /user_stories/<id>**: Obtener una historia de usuario por ID
+- **PUT /user_stories/<id>**: Actualizar una historia de usuario
+- **DELETE /user_stories/<id>**: Eliminar una historia de usuario
+
 ### CRUD de tareas
 - **POST /tasks**: Crear una tarea
 - **GET /tasks**: Obtener todas las tareas
@@ -36,70 +51,56 @@ python main.py
 - **PUT /tasks/<id>**: Actualizar una tarea
 - **DELETE /tasks/<id>**: Eliminar una tarea
 
-### Endpoints con IA
-- **POST /ai/tasks/describe**: Genera la descripción de una tarea a partir de su título y otros campos opcionales.
-- **POST /ai/tasks/categorize**: Clasifica una tarea en una categoría (Backend, Frontend, Testing, Documentación, Otro) usando IA.
-- **POST /ai/tasks/estimate**: Estima el esfuerzo en horas de una tarea a partir de su título, descripción, prioridad y categoría.
-- **POST /ai/tasks/audit**: Genera un análisis de riesgos y un plan de mitigación para una tarea usando IA.
+### Endpoints de IA
+- **POST /user-stories**: Generar historia de usuario desde prompt (IA)
+- **POST /user-stories/<user_story_id>/generate-tasks**: Generar tareas para una historia de usuario (IA)
+
+### Vistas HTML
+- **GET /user-stories**: Vista HTML de historias de usuario
+- **GET /user-stories/<user_story_id>/tasks**: Vista HTML de tareas asociadas a una historia de usuario
 
 ## Ejemplos de uso de la API
 
-### Crear una tarea (POST)
+### Crear una historia de usuario
+```bash
+curl -X POST http://127.0.0.1:5000/user_stories \
+-H "Content-Type: application/json" \
+-d '{
+  "project": "Proyecto Demo",
+  "role": "Como usuario",
+  "goal": "quiero poder registrarme",
+  "reason": "para acceder a funcionalidades exclusivas",
+  "description": "El usuario debe poder crear una cuenta con email y contraseña.",
+  "priority": "alta",
+  "story_points": 5,
+  "effort_hours": 8,
+  "created_at": null
+}'
+```
+
+### Crear una tarea
 ```bash
 curl -X POST http://127.0.0.1:5000/tasks \
 -H "Content-Type: application/json" \
--d '{"title": "Tarea de ejemplo", "description": "Descripción", "priority": "alta", "effort_hours": 2, "status": "pendiente", "assigned_to": "Juan"}'
+-d '{
+  "title": "Implementar autenticación de usuarios",
+  "description": "Desarrollar el sistema de login y registro para la aplicación.",
+  "priority": "alta",
+  "effort_hours": 3.5,
+  "status": "pendiente",
+  "assigned_to": "Backend",
+  "user_story_id": 1
+}'
 ```
 
-### Obtener todas las tareas (GET)
-```bash
-curl http://127.0.0.1:5000/tasks
-```
+### Generar historia de usuario desde prompt (IA)
+- Desde la vista HTML `/user-stories` puedes introducir un prompt y la IA generará y guardará una historia de usuario.
 
-### Obtener una tarea por ID (GET)
-```bash
-curl http://127.0.0.1:5000/tasks/1
-```
+### Generar tareas para una historia de usuario (IA)
+- En la vista de historias de usuario, puedes pulsar "Generar tareas" y la IA descompondrá la historia en tareas técnicas, que se guardarán automáticamente.
 
-### Actualizar una tarea (PUT)
-```bash
-curl -X PUT http://127.0.0.1:5000/tasks/1 \
--H "Content-Type: application/json" \
--d '{"title": "Tarea actualizada", "description": "Nueva descripción", "priority": "media", "effort_hours": 3, "status": "en progreso", "assigned_to": "Ana"}'
-```
-
-### Eliminar una tarea (DELETE)
-```bash
-curl -X DELETE http://127.0.0.1:5000/tasks/1
-```
-
-### Endpoint IA: Describir tarea (POST)
-```bash
-curl -X POST http://127.0.0.1:5000/ai/tasks/describe \
--H "Content-Type: application/json" \
--d '{"title": "Implementar autenticación JWT", "description": "", "priority": "alta", "category": "Backend"}'
-```
-
-### Endpoint IA: Categorizar tarea (POST)
-```bash
-curl -X POST http://127.0.0.1:5000/ai/tasks/categorize \
--H "Content-Type: application/json" \
--d '{"title": "Crear pruebas unitarias", "description": "Escribir tests para el módulo de usuarios"}'
-```
-
-### Endpoint IA: Estimar esfuerzo (POST)
-```bash
-curl -X POST http://127.0.0.1:5000/ai/tasks/estimate \
--H "Content-Type: application/json" \
--d '{"title": "Desarrollar API REST", "description": "Crear endpoints para gestión de usuarios", "priority": "media", "category": "Backend"}'
-```
-
-### Endpoint IA: Auditar tarea (POST)
-```bash
-curl -X POST http://127.0.0.1:5000/ai/tasks/audit \
--H "Content-Type: application/json" \
--d '{"title": "Actualizar librerías del proyecto", "description": "Actualizar dependencias a sus últimas versiones", "priority": "media", "category": "Backend"}'
-```
+### Ver tareas asociadas a una historia de usuario
+- Accede a `/user-stories/<user_story_id>/tasks` para ver todas las tareas generadas o asociadas a esa historia.
 
 ## Ejecución de tests
 
@@ -107,21 +108,21 @@ curl -X POST http://127.0.0.1:5000/ai/tasks/audit \
     ```bash
     env\Scripts\activate
     ```
-
 2. Ejecuta los tests con pytest:
     ```bash
     pytest
     ```
-
 3. Para ver la cobertura de los tests:
     ```bash
-    pytest --cov=src tests/ 
-    ```
-    que generará un informe en la terminal, o bien
-    
-    ```bash
+    pytest --cov=src tests/
     pytest --cov=src --cov-report=html tests/
     ```
     El informe detallado estará en la carpeta `htmlcov`.
 
 ---
+
+**Notas:**
+- El proyecto usa SQLAlchemy para la persistencia y Pydantic para validación/serialización.
+- La integración con Azure OpenAI permite generación automática de historias de usuario y tareas, con control de errores y feedback visual en frontend.
+- El frontend HTML usa Jinja2 y muestra feedback de carga y alertas tras operaciones.
+- El código está modularizado y preparado para ampliaciones futuras.

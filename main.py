@@ -1,9 +1,20 @@
+import os
 from flask import Flask
+from flask_debugtoolbar import DebugToolbarExtension
 from src.routes.task_routes import create_tasks_blueprint
 from src.routes.user_story_routes import create_user_stories_blueprint
 from src.db import init_db
 
-app = Flask(__name__)
+# Configura la ruta absoluta a la carpeta templates
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATES_DIR = os.path.join(BASE_DIR, 'src','templates')
+
+app = Flask(__name__, template_folder=TEMPLATES_DIR)
+app.debug = True
+app.config['SECRET_KEY'] = 'dev'  # Necesario para la toolbar
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False  # Opcional, para no interceptar redirecciones
+
+toolbar = DebugToolbarExtension(app)
 init_db(app)
 app.register_blueprint(create_tasks_blueprint())
 app.register_blueprint(create_user_stories_blueprint())

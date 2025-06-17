@@ -19,13 +19,13 @@ def create_tasks_blueprint(task_manager=None):
         except ValidationError as e:
             return jsonify({"errors": e.errors()}), 422
         task = tm.add_task(validated.model_dump())
-        return jsonify(TaskSchema.model_validate(task.to_dict()).model_dump()), 201
+        return jsonify(TaskSchema.model_validate(task).model_dump()), 201
 
     # Leer todas las tareas
     @tasks_bp.route('/tasks', methods=['GET'])
     def get_tasks():
         tasks = tm.get_all_tasks()
-        return jsonify(TaskSchemas([TaskSchema.model_validate(t.to_dict()) for t in tasks]).model_dump())
+        return jsonify(TaskSchemas(TaskSchemasList=[TaskSchema.model_validate(t) for t in tasks]).model_dump())
 
     # Leer una tarea específica
     @tasks_bp.route('/tasks/<int:task_id>', methods=['GET'])
@@ -33,7 +33,7 @@ def create_tasks_blueprint(task_manager=None):
         task = tm.get_task(task_id)
         if not task:
             return jsonify({'error': 'Tarea no encontrada'}), 404
-        return jsonify(TaskSchema.model_validate(task.to_dict()).model_dump())
+        return jsonify(TaskSchema.model_validate(task).model_dump())
 
     # Actualizar una tarea
     @tasks_bp.route('/tasks/<int:task_id>', methods=['PUT'])
@@ -48,7 +48,7 @@ def create_tasks_blueprint(task_manager=None):
         task = tm.update_task(task_id, validated.model_dump())
         if not task:
             return jsonify({'error': 'Tarea no encontrada'}), 404
-        return jsonify(TaskSchema.model_validate(task.to_dict()).model_dump())
+        return jsonify(TaskSchema.model_validate(task).model_dump())
 
     # Eliminar una tarea
     @tasks_bp.route('/tasks/<int:task_id>', methods=['DELETE'])

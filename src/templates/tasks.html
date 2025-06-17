@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tareas de la Historia de Usuario</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h1>Tareas para la Historia de Usuario ID: {{ user_story_id }}</h1>
+    <a href="/user-stories" class="btn btn-secondary mb-3">Volver a historias de usuario</a>
+    <ul class="list-group">
+        {% for task in tasks %}
+        <li class="list-group-item">
+            <div><strong>ID:</strong> {{ task.id }}</div>
+            <div><strong>Título:</strong> {{ task.title }}</div>
+            <div><strong>Descripción:</strong> {{ task.description }}</div>
+            <div><strong>Prioridad:</strong> {{ task.priority }}</div>
+            <div><strong>Horas de esfuerzo:</strong> {{ task.effort_hours }}</div>
+            <div><strong>Estado:</strong> {{ task.status }}</div>
+            <div><strong>Asignado a:</strong> {{ task.assigned_to }}</div>
+            <div><strong>User Story ID:</strong> {{ task.user_story_id }}</div>
+            <div><strong>Fecha de creación:</strong> {{ task.created_at }}</div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+</body>
+</html>
