@@ -68,7 +68,10 @@ def create_user_stories_blueprint(user_story_manager=None):
     def user_stories_html():
         user_stories = usm.get_all_user_stories()
         # Pasar los objetos ORM convertidos a diccionario para Jinja2
-        user_stories_dicts = [us.to_dict() for us in user_stories]
+        try:
+            user_stories_dicts = [us.to_dict() for us in user_stories]
+        except ValidationError as e:
+            return jsonify({"errors": e.errors()}), 422
         return render_template('user-stories.html', user_stories=user_stories_dicts)
 
     @user_stories_bp.route('/user-stories', methods=['POST'])
