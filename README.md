@@ -235,15 +235,15 @@ El proyecto incluye GitHub Actions que:
 
 ### Construir imagen
 ```bash
-docker build -t task-management-system .
+docker build -t proyecto-unir-pipe .
 ```
 
 ### Ejecutar contenedor
 ```bash
 docker run -d -p 5000:5000 \
   --env-file .env \
-  --name task-app \
-  task-management-system
+  --name proyecto-unir-container \
+  proyecto-unir-pipe
 ```
 
 ### Docker Compose (recomendado)

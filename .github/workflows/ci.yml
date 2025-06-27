@@ -51,7 +51,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v4
       with:
-        images: ${{ secrets.DOCKER_USERNAME }}/task-management-app
+        images: ${{ secrets.DOCKER_USERNAME }}/proyecto-unir-pipe
         tags: |
           type=ref,event=branch
           type=ref,event=pr
