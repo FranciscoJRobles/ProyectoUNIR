@@ -46,5 +46,5 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/flask-app:latest .
-        docker push ${{ secrets.DOCKER_USERNAME }}/flask-app:latest
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/Proyecto-Unir-pipe:latest .
+        docker push ${{ secrets.DOCKER_USERNAME }}/Proyecto-Unir-pipe:latest
