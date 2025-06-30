@@ -1,4 +1,3 @@
-test
 
 # 🚀 Sistema de Gestión Ágil - Historias de Usuario y Tareas
 
