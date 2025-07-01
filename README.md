@@ -1,4 +1,3 @@
-TEST
 # 🚀 Sistema de Gestión Ágil - Historias de Usuario y Tareas
 
 > **Aplicación Flask moderna con IA integrada para la gestión ágil de proyectos**
